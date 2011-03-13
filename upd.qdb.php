@@ -18,6 +18,18 @@ class Qdb_upd {
 		);
 		$this->EE->db->insert("modules", $data);
 		
+		$this->EE->dbforge->add_field(array(
+			"quote_id" => array("type" => "int", "constraint" => "10", "unsigned" => TRUE, "auto_increment" => TRUE),
+			"member_id" => array("type" => "int", "constraint" => "10", "unsigned" => TRUE),
+			"created_at" => array("type" => "datetime"),
+			"updated_at" => array("type" => "datetime"),
+			"status" => array("type" => "enum('open', 'closed')", "default" => "open"),
+			"body" => array("type" => "text", "null" => FALSE)
+		));
+		$this->EE->dbforge->add_key("quote_id", TRUE);
+		$this->EE->dbforge->add_key(array("member_id", "status"));
+		$this->EE->dbforge->create_table("qdb_quotes");
+		
 		return TRUE;
 	}
 	
