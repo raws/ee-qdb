@@ -17,7 +17,7 @@ class Qdb_mcp {
 		
 		$this->EE->cp->set_variable("cp_page_title", $this->EE->lang->line("qdb_module_name"));
 		
-		$vars["action_url"] = "C=addons_modules".AMP."M=show_module_cp".AMP."module=qdb".AMP."method=edit_quote";
+		$vars["action_url"] = $this->cp_link_to("add_quote");
 		$vars["quotes"] = array();
 		
 		if (!$offset = $this->EE->input->get_post("offset")) {
@@ -42,5 +42,9 @@ class Qdb_mcp {
 		// $vars["pagination"] = $this->EE->pagination->create_links();
 		
 		return $this->EE->load->view("index", $vars, TRUE);
+	}
+	
+	private function cp_link_to($method) {
+		return "C=addons_modules".AMP."M=show_module_cp".AMP."module=qdb".AMP."method=$method";
 	}
 }
