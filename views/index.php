@@ -1,5 +1,3 @@
-<h3><?=lang("recently_added");?></h3>
-
 <?php
 $this->table->set_template($cp_table_template);
 $this->table->set_heading(
@@ -15,10 +13,10 @@ if (count($quotes) > 0) {
 	foreach ($quotes as $quote) {
 		$this->table->add_row(
 			$quote["quote_id"],
-			$quote["member_id"],
+			'<a href="'.BASE.AMP.'C=myaccount'.AMP.'id='.$quote["member_id"].'">'.$quote["screen_name"].'</a>',
 			$quote["created_at"],
 			$quote["updated_at"],
-			$quote["body"],
+			nl2br(htmlspecialchars($quote["body"])),
 			$quote["status"]
 		);
 	}

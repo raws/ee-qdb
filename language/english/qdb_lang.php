@@ -12,6 +12,12 @@ $lang = array(
 	"updated" => "Updated",
 	"preview" => "Preview",
 	"status" => "Status",
-	"recently_added" => "Recently Added",
-	"no_quotes_in_database" => "There are no quotes in the database."
+	"open" => "Published",
+	"closed" => "Hidden",
+	"body" => "Body",
+	"name" => "Name",
+	"value" => "Value",
+	"no_quotes_in_database" => "There are no quotes in the database.",
+	
+	"quote_added_successfully" => "Quote added successfully!"
 );

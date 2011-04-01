@@ -7,7 +7,7 @@ class Qdb_mcp {
 		$this->EE =& get_instance();
 		
 		$this->EE->cp->set_right_nav(array(
-			"add_quote" => BASE.AMP."C=addons_modules".AMP."M=show_module_cp".AMP."module=qdb".AMP."method=add_quote"
+			"add_quote" => $this->cp_link_to("add_quote")
 		));
 	}
 	
@@ -17,23 +17,17 @@ class Qdb_mcp {
 		
 		$this->EE->cp->set_variable("cp_page_title", $this->EE->lang->line("qdb_module_name"));
 		
-		$vars["action_url"] = $this->cp_link_to("add_quote");
+		$vars["action_url"] = $this->cp_link_to("index");
 		$vars["quotes"] = array();
 		
 		if (!$offset = $this->EE->input->get_post("offset")) {
 			$offset = 0;
 		}
 		$this->EE->db->order_by("quote_id", "desc");
-		// TODO SELECT SUBSTRING_INDEX(body, "\n", 1) to select first line of quote
-		$query = $this->EE->db->get("qdb_quotes", $offset, $this->per_page);
-		
-		foreach ($query->result_array() as $row) {
-			$vars["quotes"][$row["quote_id"]]["member_id"] = $row["member_id"];
-			$vars["quotes"][$row["quote_id"]]["created_at"] = $row["created_at"];
-			$vars["quotes"][$row["quote_id"]]["updated_at"] = $row["updated_at"];
-			$vars["quotes"][$row["quote_id"]]["status"] = $row["status"];
-			$vars["quotes"][$row["quote_id"]]["body"] = $row["body"];
-		}
+		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
+		$this->EE->db->join("members", "qdb_quotes.member_id = members.member_id", "inner");
+		$query = $this->EE->db->get("qdb_quotes", $this->per_page, $offset);
+		$vars["quotes"] = $query->result_array();
 		
 		// Pagination
 		// $total = $this->EE->db->count_all("qdb_quotes");
@@ -44,7 +38,71 @@ class Qdb_mcp {
 		return $this->EE->load->view("index", $vars, TRUE);
 	}
 	
+	function add_quote() {
+		if ($_SERVER["REQUEST_METHOD"] == "POST") {
+			return $this->post_add_quote();
+		} else {
+			return $this->get_add_quote();
+		}
+	}
+	
+	function get_add_quote() {
+		$this->EE->load->library("table");
+		
+		$this->EE->cp->set_variable("cp_page_title", $this->EE->lang->line("add_quote"));
+		$this->EE->cp->set_breadcrumb($this->cp_link_to("index"), $this->EE->lang->line("qdb_module_name"));
+		
+		$vars["action_url"] = $this->cp_path_to("add_quote");
+		
+		$this->EE->db->select("member_id, screen_name");
+		$query = $this->EE->db->get("members");
+		foreach ($query->result() as $row) {
+			$vars["members"][$row->member_id] = $row->screen_name;
+		}
+		$vars["member_id"] = $this->EE->session->userdata["member_id"];
+		
+		return $this->EE->load->view("add_quote", $vars, TRUE);
+	}
+	
+	function post_add_quote() {
+		$this->EE->load->library("form_validation");
+		
+		$this->EE->form_validation->set_rules("member_id", lang("submitted_by"), "required|integer|greater_than[0]");
+		$this->EE->form_validation->set_rules("created_at", lang("created"), "trim|required|exact_length[19]");
+		$this->EE->form_validation->set_rules("status", lang("status"), "required|callback_validate_status");
+		$this->EE->form_validation->set_rules("body", lang("body"), "trim|required");
+		
+		$this->EE->form_validation->set_error_delimiters('<p class="shun notice">', '</p>');
+		
+		if ($this->EE->form_validation->run() == FALSE) {
+			return $this->get_add_quote();
+		} else {
+			$data = array(
+				"member_id" => $this->EE->input->post("member_id"),
+				"created_at" => $this->EE->input->post("created_at"),
+				"updated_at" => $this->EE->input->post("created_at"),
+				"status" => $this->EE->input->post("status"),
+				"body" => $this->EE->input->post("body")
+			);
+			$this->EE->db->insert("qdb_quotes", $data);
+			
+			$this->EE->session->set_flashdata("message_success", lang("quote_added_successfully"));
+			$this->EE->functions->redirect($this->cp_link_to("index"));
+		}
+	}
+	
+	function validate_status($status) {
+		return in_array($status, array("open", "closed"));
+	}
+	
+	private function cp_path_to($method) {
+		$uri = "C=addons_modules".AMP."M=show_module_cp".AMP."module=qdb";
+		if ($method != "index")
+			$uri .= AMP."method=$method";
+		return $uri;
+	}
+	
 	private function cp_link_to($method) {
-		return "C=addons_modules".AMP."M=show_module_cp".AMP."module=qdb".AMP."method=$method";
+		return BASE.AMP.$this->cp_path_to($method);
 	}
 }
