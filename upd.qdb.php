@@ -28,7 +28,7 @@ class Qdb_upd {
 		));
 		$this->EE->dbforge->add_key("quote_id", TRUE);
 		$this->EE->dbforge->add_key(array("member_id", "status"));
-		$this->EE->dbforge->create_table("qdb_quotes");
+		$this->EE->dbforge->create_table("qdb_quotes", TRUE);
 		
 		return TRUE;
 	}
