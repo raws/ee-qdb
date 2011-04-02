@@ -4,10 +4,15 @@ $this->cp->add_to_head(<<<EOS
 	.status { font-weight: bold; }
 	.status.open { color: green; }
 	.status.closed { color: red; }
+	.tableFooter { margin-top: 20px; }
 </style>
 EOS
 );
+?>
 
+<?=form_open($action_url);?>
+
+<?php
 $this->table->set_template($cp_table_template);
 $this->table->set_heading(
 	lang("quote_id"),
@@ -15,7 +20,8 @@ $this->table->set_heading(
 	lang("created"),
 	lang("updated"),
 	lang("preview"),
-	lang("status")
+	lang("status"),
+	form_checkbox("select_all", "true", FALSE, 'id="select_all" class="toggle_all"')
 );
 
 if (count($quotes) > 0) {
@@ -26,7 +32,8 @@ if (count($quotes) > 0) {
 			$quote["created_at"],
 			$quote["updated_at"],
 			nl2br(htmlspecialchars($quote["body"])),
-			'<span class="status '.$quote["status"].'">'.lang($quote["status"]).'</span>'
+			'<span class="status '.$quote["status"].'">'.lang($quote["status"]).'</span>',
+			form_checkbox($quote["toggle"])
 		);
 	}
 } else {
@@ -39,3 +46,12 @@ if (count($quotes) > 0) {
 
 echo $this->table->generate();
 ?>
+
+<div class="tableFooter">
+	<div class="tableSubmit">
+		<?=form_submit(array("name" => "submit", "value" => lang("submit"), "class" => "submit"));?>&nbsp;
+		<?=form_dropdown("action", $options);?>
+	</div>
+</div>
+
+<?=form_close();?>

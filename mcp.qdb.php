@@ -12,13 +12,25 @@ class Qdb_mcp {
 	}
 	
 	function index() {
+		if ($_SERVER["REQUEST_METHOD"] == "POST") {
+			return $this->post_index();
+		} else {
+			return $this->get_index();
+		}
+	}
+	
+	function get_index() {
 		$this->EE->load->library("pagination");
 		$this->EE->load->library("table");
 		
 		$this->EE->cp->set_variable("cp_page_title", $this->EE->lang->line("qdb_module_name"));
 		
-		$vars["action_url"] = $this->cp_link_to("index");
-		$vars["quotes"] = array();
+		$vars["action_url"] = $this->cp_path_to("index");
+		$vars["options"] = array(
+			"delete" => $this->EE->lang->line("delete_selected"),
+			"close" => $this->EE->lang->line("close_selected"),
+			"open" => $this->EE->lang->line("open_selected")
+		);
 		
 		if (!$offset = $this->EE->input->get_post("offset")) {
 			$offset = 0;
@@ -27,7 +39,15 @@ class Qdb_mcp {
 		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
 		$this->EE->db->join("members", "qdb_quotes.member_id = members.member_id", "inner");
 		$query = $this->EE->db->get("qdb_quotes", $this->per_page, $offset);
-		$vars["quotes"] = $query->result_array();
+		foreach ($query->result_array() as $row) {
+			$vars["quotes"][$row["quote_id"]] = $row;
+			$vars["quotes"][$row["quote_id"]]["toggle"] = array(
+				"name" => "toggle[]",
+				"id" => "toggle_".$row["quote_id"],
+				"value" => $row["quote_id"],
+				"class" => "toggle"
+			);
+		}
 		
 		// Pagination
 		// $total = $this->EE->db->count_all("qdb_quotes");
@@ -35,7 +55,36 @@ class Qdb_mcp {
 		// $this->EE->pagination->initialize($pagination_config);
 		// $vars["pagination"] = $this->EE->pagination->create_links();
 		
+		$this->EE->cp->load_package_js("index");
 		return $this->EE->load->view("index", $vars, TRUE);
+	}
+	
+	function post_index() {
+		$quote_ids = $this->EE->input->post("toggle");
+		
+		if (empty($quote_ids)) {
+			$this->EE->functions->redirect($this->cp_link_to("index"));
+		}
+		
+		switch ($this->EE->input->post("action")) {
+			case "delete":
+				$this->EE->db->where_in("quote_id", $quote_ids);
+				$this->EE->db->delete("qdb_quotes");
+				$this->EE->session->set_flashdata("message_success", lang("quotes_deleted_successfully"));
+				break;
+			case "close":
+				$this->EE->db->where_in("quote_id", $quote_ids);
+				$this->EE->db->update("qdb_quotes", array("status" => "closed"));
+				$this->EE->session->set_flashdata("message_success", lang("quotes_closed_successfully"));
+				break;
+			case "open":
+				$this->EE->db->where_in("quote_id", $quote_ids);
+				$this->EE->db->update("qdb_quotes", array("status" => "open"));
+				$this->EE->session->set_flashdata("message_success", lang("quotes_opened_successfully"));
+				break;
+		}
+		
+		$this->EE->functions->redirect($this->cp_link_to("index"));
 	}
 	
 	function add_quote() {
