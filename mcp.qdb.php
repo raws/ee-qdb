@@ -33,9 +33,22 @@ class Qdb_mcp {
 			"open" => $this->EE->lang->line("open_selected")
 		);
 		
+		$this->EE->db->select(array("member_id", "screen_name"));
+		$query = $this->EE->db->get("members");
+		$vars["members"][""] = "";
+		foreach ($query->result() as $row)
+			$vars["members"][$row->member_id] = $row->screen_name;
+		
 		if (!$offset = $this->EE->input->get_post("page")) {
 			$offset = 0;
 		}
+		
+		$filters = $this->process_filters();
+		$this->EE->db->from("qdb_quotes");
+		$total = $this->EE->db->count_all_results();
+		
+		// Set up filters again for next query
+		$this->process_filters();
 		
 		$this->EE->db->order_by("created_at", "desc");
 		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
@@ -56,8 +69,7 @@ class Qdb_mcp {
 		}
 		
 		// Pagination
-		$total = $this->EE->db->count_all("qdb_quotes");
-		$config["base_url"] = $this->cp_link_to("index");
+		$config["base_url"] = $this->cp_link_to("index", $filters);
 		$config["total_rows"] = $total;
 		$config["per_page"] = $this->per_page;
 		$config["page_query_string"] = TRUE;
@@ -68,6 +80,7 @@ class Qdb_mcp {
 		$vars["start"] = $offset;
 		$vars["end"] = (($offset / $this->per_page) + 1) * $this->per_page;
 		$vars["total"] = $total;
+		$vars["per_page"] = $this->per_page;
 		
 		$this->EE->cp->load_package_js("index");
 		return $this->EE->load->view("index", $vars, TRUE);
@@ -345,6 +358,32 @@ class Qdb_mcp {
 		if (in_array($input, array("1", "open", "true", "yes", "y")))
 			return "open";
 		return "closed";
+	}
+	
+	private function process_filters() {
+		$filters = array();
+		
+		if (($fid = $this->EE->input->get_post("fid")) !== FALSE && !empty($fid)) {
+			$this->EE->db->where("quote_id", $fid);
+			$filters["fid"] = $fid;
+		}
+		
+		if (($fmid = $this->EE->input->get_post("fmid")) !== FALSE && !empty($fmid)) {
+			$this->EE->db->where("qdb_quotes.member_id", $fmid);
+			$filters["fmid"] = $fmid;
+		}
+		
+		if (($fst = $this->EE->input->get_post("fst")) !== FALSE && !empty($fst)) {
+			$this->EE->db->where("status", $fst);
+			$filters["fst"] = $fst;
+		}
+		
+		if (($fb = $this->EE->input->get_post("fb")) !== FALSE && !empty($fb)) {
+			$this->EE->db->where("body LIKE", "%$fb%");
+			$filters["fb"] = $fb;
+		}
+		
+		return $filters;
 	}
 	
 	static function cp_path_to($method, $query = array()) {

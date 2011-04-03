@@ -30,6 +30,7 @@ $lang = array(
 	"default_member" => "Default Member",
 	"default_member_desc" => "If an imported quote's member_id is not in the database, choose the member to whom the quote should be assigned.",
 	"no_quotes_in_database" => "There are no quotes in the database.",
+	"no_quotes_match_filters" => "No quotes match your filters.",
 	"showing_x_quotes" => 'Showing %1$d to %2$d of %3$d quotes.',
 	
 	"quote_saved_successfully" => "Quote saved successfully!",
@@ -41,5 +42,14 @@ $lang = array(
 	
 	"import_quotes_intro" => "You may upload a CSV file to import quotes from another quote database.",
 	"import_quotes_columns_desc" => "Describe the order of the columns in your CSV file in a comma-delimited list. ExpressionEngine will do its best to convert data, such as timestamps, to a suitable format.",
-	"valid_columns" => "Valid columns"
+	"valid_columns" => "Valid columns",
+	
+	"show_filters" => "Show Filters",
+	"click_to_expand_filters" => "Click to expand filter controls",
+	"filter_quote_id_is" => "Quote ID is",
+	"filter_submitted_by" => "Submitted by",
+	"filter_status_is" => "Status is",
+	"filter_body_contains" => "Body contains",
+	"filter_quotes" => "Filter Quotes",
+	"clear_filters" => "Clear Filters"
 );
