@@ -24,7 +24,7 @@ $this->table->set_heading(
 	form_checkbox("select_all", "true", FALSE, 'id="select_all" class="toggle_all"')
 );
 
-if (count($quotes) > 0) {
+if (isset($quotes) && !empty($quotes)) {
 	foreach ($quotes as $quote) {
 		$this->table->add_row(
 			'<a href="'.Qdb_mcp::cp_link_to("edit_quote", array("id" => $quote["quote_id"])).'">'.$quote["quote_id"].'</a>',
@@ -39,7 +39,7 @@ if (count($quotes) > 0) {
 } else {
 	$this->table->add_row(array(
 		"data" => lang("no_quotes_in_database"),
-		"colspan" => 6,
+		"colspan" => 7,
 		"style" => "text-align:center;"
 	));
 }

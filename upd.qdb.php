@@ -22,7 +22,7 @@ class Qdb_upd {
 			"quote_id" => array("type" => "int", "constraint" => "10", "unsigned" => TRUE, "auto_increment" => TRUE),
 			"member_id" => array("type" => "int", "constraint" => "10", "unsigned" => TRUE, "null" => FALSE),
 			"created_at" => array("type" => "datetime", "null" => FALSE),
-			"updated_at" => array("type" => "datetime", "null" => FALSE),
+			"updated_at" => array("type" => "datetime", "null" => TRUE),
 			"status" => array("type" => "enum('open', 'closed')", "default" => "open", "null" => FALSE),
 			"body" => array("type" => "text", "null" => FALSE)
 		));

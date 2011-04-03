@@ -7,7 +7,8 @@ class Qdb_mcp {
 		$this->EE =& get_instance();
 		
 		$this->EE->cp->set_right_nav(array(
-			"add_quote" => $this->cp_link_to("add_quote")
+			"add_quote" => $this->cp_link_to("add_quote"),
+			"import_quotes" => $this->cp_link_to("import_quotes")
 		));
 	}
 	
@@ -35,7 +36,7 @@ class Qdb_mcp {
 		if (!$offset = $this->EE->input->get_post("offset")) {
 			$offset = 0;
 		}
-		$this->EE->db->order_by("quote_id", "desc");
+		$this->EE->db->order_by("created_at", "desc");
 		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
 		$this->EE->db->join("members", "qdb_quotes.member_id = members.member_id", "inner");
 		$query = $this->EE->db->get("qdb_quotes", $this->per_page, $offset);
@@ -47,6 +48,10 @@ class Qdb_mcp {
 				"value" => $row["quote_id"],
 				"class" => "toggle"
 			);
+			$body = $vars["quotes"][$row["quote_id"]]["body"];
+			if (strlen($body) > 75) {
+				$vars["quotes"][$row["quote_id"]]["body"] = substr($body, 0, 75) . "…";
+			}
 		}
 		
 		// Pagination
@@ -195,8 +200,142 @@ class Qdb_mcp {
 		}
 	}
 	
+	function import_quotes() {
+		if ($_SERVER["REQUEST_METHOD"] == "POST") {
+			return $this->post_import_quotes();
+		} else {
+			return $this->get_import_quotes();
+		}
+	}
+	
+	function get_import_quotes() {
+		$this->EE->load->library("table");
+		
+		$this->EE->cp->set_variable("cp_page_title", $this->EE->lang->line("import_quotes"));
+		$this->EE->cp->set_breadcrumb($this->cp_link_to("index"), $this->EE->lang->line("qdb_module_name"));
+		
+		$vars["action_url"] = $this->cp_path_to("import_quotes");
+		
+		$this->EE->db->select(array("member_id", "screen_name"));
+		$query = $this->EE->db->get("members");
+		foreach ($query->result() as $row)
+			$vars["members"][$row->member_id] = $row->screen_name;
+		$vars["member_id"] = $this->EE->session->userdata["member_id"];
+		
+		return $this->EE->load->view("import_quotes", $vars, TRUE);
+	}
+	
+	function post_import_quotes() {
+		$config["upload_path"] = sys_get_temp_dir();
+		$config["allowed_types"] = "csv|txt";
+		$config["encrypt_name"] = TRUE;
+		$this->EE->load->library("upload", $config);
+		
+		if ($this->EE->upload->do_upload("file") == FALSE) {
+			$this->EE->session->set_flashdata("message_failure", $this->EE->upload->display_errors());
+			return $this->EE->functions->redirect($this->cp_link_to("import_quotes"));
+		}
+		
+		$this->EE->load->library("form_validation");
+		$this->EE->form_validation->set_rules("columns", lang("columns"), "trim|required");
+		$this->EE->form_validation->set_rules("default_member_id", lang("default_member"), "required");
+		if ($this->EE->form_validation->run() == FALSE) {
+			$this->EE->session->set_flashdata("message_failure", $this->EE->form_validation->validation_errors());
+			return $this->EE->functions->redirect($this->cp_link_to("import_quotes"));
+		}
+		
+		$upload = $this->EE->upload->data();
+		$required_columns = array("member_id", "created_at", "status", "body");
+		$columns = preg_split("/[\s,]+/", strtolower(trim($this->EE->input->post("columns"))));
+		$column_count = count($columns);
+		$batch_data = array();
+		$count = 0;
+		
+		$this->EE->db->select("member_id");
+		$query = $this->EE->db->get("members");
+		$members = $query->result_array();
+		$member_ids = array_map(array($this, "map_member_id"), $members);
+		$default_member_id = $this->EE->input->post("default_member_id");
+		
+		if (($handle = fopen($upload["full_path"], "r")) !== FALSE) {
+			while (($row = fgetcsv($handle, 0, ",")) !== FALSE) {
+				if (count($row) != $column_count) { continue; }
+				
+				$data = array_combine($columns, $row);
+				foreach ($data as $key => $value) {
+					switch ($key) {
+						case "member_id":
+							if (!in_array($value, $member_ids))
+								$data[$key] = $default_member_id;
+							break;
+						case "body":
+							$data[$key] = $this->process_body($value);
+							break;
+						case "created_at":
+							$data[$key] = $this->process_datetime($value);
+							break;
+						case "updated_at":
+							$data[$key] = $this->process_datetime($value);
+							break;
+						case "status":
+							$data[$key] = $this->process_status($value);
+							break;
+					}
+					
+					if ($data[$key] == FALSE) { continue 2; }
+				}
+				
+				foreach ($required_columns as $column_name) {
+					if (!array_key_exists($column_name, $data)) { continue 2; }
+				}
+				
+				$batch_data[] = $data;
+				$count++;
+			}
+			
+			fclose($handle);
+		} else {
+			$this->EE->session->set_flashdata("message_failure", lang("could_not_read_file"));
+			$this->EE->functions->redirect($this->cp_link_to("import_quotes"));
+		}
+		
+		$this->EE->db->insert_batch("qdb_quotes", $batch_data);
+		
+		$this->EE->session->set_flashdata("message_success", $count." ".lang("quotes_imported_successfully"));
+		$this->EE->functions->redirect($this->cp_link_to("index"));
+	}
+	
 	function validate_status($status) {
 		return in_array($status, array("open", "closed"));
+	}
+	
+	private function map_member_id($input) {
+		return $input["member_id"];
+	}
+	
+	private function process_body($input) {
+		return trim(strval($input));
+	}
+	
+	private function process_datetime($input) {
+		$input = strval($input);
+		
+		if (preg_match("/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/", $input)) {
+			// MySQL DATETIME
+			return $input;
+		} else if (preg_match("/^\d+$/", $input)) {
+			// Unix timestamp
+			return date("Y-m-d H:i:s", intval($input));
+		}
+		
+		return FALSE;
+	}
+	
+	private function process_status($input) {
+		$input = strtolower(trim(strval($input)));
+		if (in_array($input, array("1", "open", "true", "yes", "y")))
+			return "open";
+		return "closed";
 	}
 	
 	static function cp_path_to($method, $query = array()) {
