@@ -267,7 +267,7 @@ class Qdb_mcp {
 		$default_member_id = $this->EE->input->post("default_member_id");
 		
 		if (($handle = fopen($upload["full_path"], "r")) !== FALSE) {
-			while (($row = fgetcsv($handle, 0, ",")) !== FALSE) {
+			while (($row = fgetcsv($handle, 0, ',', '"', '\\')) !== FALSE) {
 				if (count($row) != $column_count) { continue; }
 				
 				$data = array_combine($columns, $row);
@@ -323,7 +323,7 @@ class Qdb_mcp {
 	}
 	
 	private function process_body($input) {
-		return trim(strval($input));
+		return str_replace('\\"', '"', trim(strval($input)));
 	}
 	
 	private function process_datetime($input) {
