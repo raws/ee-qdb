@@ -4,7 +4,9 @@ $this->cp->add_to_head(<<<EOS
 	.status { font-weight: bold; }
 	.status.open { color: green; }
 	.status.closed { color: red; }
-	.tableFooter { margin-top: 20px; }
+	.table-footer { margin-top: 10px; overflow: hidden; text-align: center; }
+	.table-footer .left { float: left; }
+	.table-footer .right { float: right; }
 </style>
 EOS
 );
@@ -47,11 +49,17 @@ if (isset($quotes) && !empty($quotes)) {
 echo $this->table->generate();
 ?>
 
-<div class="tableFooter">
-	<div class="tableSubmit">
+<?php if (isset($quotes) && !empty($quotes)): ?>
+<div class="table-footer">
+	<div class="left">
+		<p><?=sprintf(lang("showing_x_quotes"), $start, $end, $total);?></p>
+	</div>
+	<?=$pagination;?>
+	<div class="right">
 		<?=form_submit(array("name" => "submit", "value" => lang("submit"), "class" => "submit"));?>&nbsp;
 		<?=form_dropdown("action", $options);?>
 	</div>
 </div>
+<?php endif; ?>
 
 <?=form_close();?>

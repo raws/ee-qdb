@@ -33,9 +33,10 @@ class Qdb_mcp {
 			"open" => $this->EE->lang->line("open_selected")
 		);
 		
-		if (!$offset = $this->EE->input->get_post("offset")) {
+		if (!$offset = $this->EE->input->get_post("page")) {
 			$offset = 0;
 		}
+		
 		$this->EE->db->order_by("created_at", "desc");
 		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
 		$this->EE->db->join("members", "qdb_quotes.member_id = members.member_id", "inner");
@@ -55,10 +56,18 @@ class Qdb_mcp {
 		}
 		
 		// Pagination
-		// $total = $this->EE->db->count_all("qdb_quotes");
-		// $pagination_config = $this->pagination_config("index", $total);
-		// $this->EE->pagination->initialize($pagination_config);
-		// $vars["pagination"] = $this->EE->pagination->create_links();
+		$total = $this->EE->db->count_all("qdb_quotes");
+		$config["base_url"] = $this->cp_link_to("index");
+		$config["total_rows"] = $total;
+		$config["per_page"] = $this->per_page;
+		$config["page_query_string"] = TRUE;
+		$config["query_string_segment"] = "page";
+		$config["num_links"] = 3;
+		$this->EE->pagination->initialize($config);
+		$vars["pagination"] = $this->EE->pagination->create_links();
+		$vars["start"] = $offset;
+		$vars["end"] = (($offset / $this->per_page) + 1) * $this->per_page;
+		$vars["total"] = $total;
 		
 		$this->EE->cp->load_package_js("index");
 		return $this->EE->load->view("index", $vars, TRUE);
