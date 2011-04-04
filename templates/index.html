@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Quote Database</title>
+		<style type="text/css" media="screen">
+			table, th, td { border: 1px solid #ccc; }
+		</style>
+	</head>
+	<body>
+		<h1>Quote Database</h1>
+		
+		<table>
+			<thead>
+				<tr>
+					<th>Quote ID</th>
+					<th>Submitter</th>
+					<th>Date</th>
+					<th>Quote</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{exp:qdb:entries limit="10"}
+				<tr>
+					<td>{quote.id}</td>
+					<td>{quote.submitter.screen_name}</td>
+					<td>{quote.created format="%Y-%m-%d %H:%i:%s"}</td>
+					<td>{quote.body}</td>
+					<td>{quote.status}</td>
+				</tr>
+				{/exp:qdb:entries}
+			</tbody>
+		</table>
+	</body>
+</html>
