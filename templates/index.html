@@ -21,12 +21,24 @@
 				</tr>
 			</thead>
 			<tbody>
-				{exp:qdb:entries limit="10" order_by="created_at" sort="desc"}
+				{exp:qdb:entries limit="10" order_by="created_at" sort="random"}
 				<tr>
 					<td>{quote.id}</td>
 					<td>{quote.submitter.screen_name}</td>
 					<td>{quote.created format="%Y-%m-%d %H:%i:%s"}</td>
-					<td>{quote.body}</td>
+					<td>
+						{quote.lines}
+						{if line.type == "message"}
+							&lt;<strong>{line.nick}</strong>&gt; {line.message}<br/>
+						{if:elseif line.type == "action"}
+							* <strong>{line.nick}</strong> {line.message}<br/>
+						{if:elseif line.type == "event"}
+							*** <strong>{line.nick}</strong> {line.message}<br/>
+						{if:else}
+							{line.message}<br/>
+						{/if}
+						{/quote.lines}
+					</td>
 					<td>{quote.status}</td>
 				</tr>
 				{if no_results}

@@ -2,6 +2,7 @@
 
 class Quote extends CI_Model {
 	const table = "qdb_quotes";
+	const regex_nickname = "[\w_|\^`\[\]]+";
 	
 	var $quote_id;
 	var $member_id;
@@ -12,6 +13,7 @@ class Quote extends CI_Model {
 	
 	var $record;
 	var $submitter;
+	var $lines;
 	
 	function __construct($record = null) {
 		parent::__construct();
@@ -54,6 +56,40 @@ class Quote extends CI_Model {
 		if (!$this->body)
 			$this->body = nl2br(htmlentities($this->record->body));
 		return $this->body;
+	}
+	
+	function lines() {
+		if (!$this->lines) {
+			$body = $this->record->body;
+			$lines = array();
+
+			foreach (preg_split("/[\r\n]+/", $body) as $line) {
+				$data = array();
+				
+				if (preg_match("/^\s*<?[+@~%]*(".Quote::regex_nickname.")[>:]*\s*(.*)$/", $line, $match)) {
+					$data["line.type"] = "message";
+					$data["line.nick"] = $match[1];
+					$data["line.message"] = $match[2];
+				} else if (preg_match("/^\s*\*\s*(".Quote::regex_nickname.")\s+(.*)$/", $line, $match)) {
+					$data["line.type"] = "action";
+					$data["line.nick"] = $match[1];
+					$data["line.message"] = $match[2];
+				} else if (preg_match("/^\s*\*+\s*(".Quote::regex_nickname.")\s+(.*)$/", $line, $match)) {
+					$data["line.type"] = "event";
+					$data["line.nick"] = $match[1];
+					$data["line.message"] = $match[2];
+				} else {
+					$data["line.type"] = "unknown";
+					$data["line.message"] = $line;
+				}
+				
+				$lines[] = $data;
+			}
+			
+			$this->lines = $lines;
+		}
+		
+		return $this->lines;
 	}
 	
 	function submitter() {

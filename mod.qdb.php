@@ -24,6 +24,7 @@ class Qdb {
 				"quote.created" => $quote->created_at(),
 				"quote.updated" => $quote->updated_at(),
 				"quote.body" => $quote->body(),
+				"quote.lines" => $quote->lines(),
 				"quote.status" => $quote->status()
 			);
 			
