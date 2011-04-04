@@ -14,7 +14,8 @@ class Qdb {
 			"limit" => $this->EE->TMPL->fetch_param("limit", 0),
 			"offset" => 0,
 			"order_by" => $this->EE->TMPL->fetch_param("order_by", "created_at"),
-			"sort" => $this->EE->TMPL->fetch_param("sort", "desc")
+			"sort" => $this->EE->TMPL->fetch_param("sort", "desc"),
+			"colors" => preg_split("/[\s|]+/", $this->EE->TMPL->fetch_param("colors", "black"))
 		);
 		
 		$vars = array();
@@ -24,7 +25,7 @@ class Qdb {
 				"quote.created" => $quote->created_at(),
 				"quote.updated" => $quote->updated_at(),
 				"quote.body" => $quote->body(),
-				"quote.lines" => $quote->lines(),
+				"quote.lines" => $quote->lines($options),
 				"quote.status" => $quote->status()
 			);
 			
