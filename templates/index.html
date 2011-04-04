@@ -29,6 +29,11 @@
 					<td>{quote.body}</td>
 					<td>{quote.status}</td>
 				</tr>
+				{if no_results}
+				<tr>
+					<td colspan="5">There are no quotes in the database.</td>
+				</tr>
+				{/if}
 				{/exp:qdb:entries}
 			</tbody>
 		</table>

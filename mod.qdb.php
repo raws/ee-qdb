@@ -29,7 +29,11 @@ class Qdb {
 			$vars[] = $data;
 		}
 		
-		$this->return_data .= $this->EE->TMPL->parse_variables($this->EE->TMPL->tagdata, $vars);
-		return $this->return_data;
+		if (empty($vars)) {
+			return $this->EE->TMPL->no_results();
+		} else {
+			$this->return_data .= $this->EE->TMPL->parse_variables($this->EE->TMPL->tagdata, $vars);
+			return $this->return_data;
+		}
 	}
 }
