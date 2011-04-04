@@ -7,7 +7,7 @@ class Qdb {
 		$this->EE =& get_instance();
 	}
 	
-	function entries() {
+	function quotes() {
 		$this->EE->load->model("quote", "quotes");
 		
 		$options = array(
