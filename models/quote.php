@@ -65,8 +65,11 @@ class Quote extends CI_Model {
 		return $this->submitter;
 	}
 	
-	function all($limit = 0, $offset = 0) {
-		$query = $this->EE->db->get(Quote::table, $limit, $offset);
+	function all($options = array()) {
+		$options = $this->query_options($options);
+		
+		$this->db->order_by($options["order_by"], $options["sort"]);
+		$query = $this->db->get(Quote::table, $options["limit"], $options["offset"]);
 		$result = array();
 		
 		foreach ($query->result() as $quote) {
@@ -74,5 +77,15 @@ class Quote extends CI_Model {
 		}
 		
 		return $result;
+	}
+	
+	private function query_options($options = array()) {
+		$defaults = array(
+			"limit" => 10,
+			"offset" => 0,
+			"order_by" => "created_at",
+			"sort" => "desc"
+		);
+		return array_merge($defaults, $options);
 	}
 }

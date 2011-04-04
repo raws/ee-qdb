@@ -8,13 +8,17 @@ class Qdb {
 	}
 	
 	function entries() {
-		$this->EE->load->model("quote");
+		$this->EE->load->model("quote", "quotes");
 		
-		$limit = $this->EE->TMPL->fetch_param("limit", 0);
-		$offset = 0;
+		$options = array(
+			"limit" => $this->EE->TMPL->fetch_param("limit", 0),
+			"offset" => 0,
+			"order_by" => $this->EE->TMPL->fetch_param("order_by", "created_at"),
+			"sort" => $this->EE->TMPL->fetch_param("sort", "desc")
+		);
 		
 		$vars = array();
-		foreach (Quote::all($limit, $offset) as $quote) {
+		foreach ($this->EE->quotes->all($options) as $quote) {
 			$data = array(
 				"quote.id" => $quote->quote_id(),
 				"quote.created" => $quote->created_at(),

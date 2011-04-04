@@ -21,7 +21,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{exp:qdb:entries limit="10"}
+				{exp:qdb:entries limit="10" order_by="created_at" sort="desc"}
 				<tr>
 					<td>{quote.id}</td>
 					<td>{quote.submitter.screen_name}</td>
