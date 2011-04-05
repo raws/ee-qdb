@@ -113,9 +113,18 @@ class Quote extends CI_Model {
 		$query = $this->db->get(Quote::table, $options["limit"], $options["offset"]);
 		$result = array();
 		
-		foreach ($query->result() as $quote) {
+		foreach ($query->result() as $quote)
 			$result[] = new Quote($quote);
-		}
+		
+		return $result;
+	}
+	
+	function find_by_quote_id($quote_id) {
+		$query = $this->db->get_where(Quote::table, array("quote_id" => $quote_id), 1);
+		$result = array();
+		
+		foreach ($query->result() as $quote)
+			$result[] = new Quote($quote);
 		
 		return $result;
 	}

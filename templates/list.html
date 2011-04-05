@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Quote Database</title>
+		<style type="text/css" media="screen">
+			table, th, td { border: 1px solid #ccc; }
+		</style>
+	</head>
+	<body>
+		<h1>Quote Database</h1>
+		
+		<table>
+			<thead>
+				<tr>
+					<th>Quote ID</th>
+					<th>Submitter</th>
+					<th>Date</th>
+					<th>Quote</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{exp:qdb:quotes limit="10" order_by="created_at" sort="random" colors="#ed1c24|#00a651|#00aeef"}
+				{_quote}
+				{if no_results}
+				<tr>
+					<td colspan="5">There are no quotes in the database.</td>
+				</tr>
+				{/if}
+				{/exp:qdb:quotes}
+			</tbody>
+		</table>
+	</body>
+</html>

@@ -1,0 +1,19 @@
+<tr>
+	<td><a href="{path='qdb/show/{quote.id}'}">{quote.id}</a></td>
+	<td>{quote.submitter.screen_name}</td>
+	<td>{quote.created format="%Y-%m-%d %H:%i:%s"}</td>
+	<td>
+		{quote.lines}
+		{if line.type == "message"}
+			<span style="color:{line.color};">&lt;<strong>{line.nick}</strong>&gt;</span> {line.message}<br/>
+		{if:elseif line.type == "action"}
+			<span style="color:{line.color};">* <strong>{line.nick}</strong></span> {line.message}<br/>
+		{if:elseif line.type == "event"}
+			<span style="color:{line.color};">*** <strong>{line.nick}</strong></span> {line.message}<br/>
+		{if:else}
+			{line.message}<br/>
+		{/if}
+		{/quote.lines}
+	</td>
+	<td>{quote.status}</td>
+</tr>

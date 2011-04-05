@@ -11,6 +11,7 @@ class Qdb {
 		$this->EE->load->model("quote", "quotes");
 		
 		$options = array(
+			"quote_id" => $this->EE->TMPL->fetch_param("quote_id"),
 			"limit" => $this->EE->TMPL->fetch_param("limit", 0),
 			"offset" => 0,
 			"order_by" => $this->EE->TMPL->fetch_param("order_by", "created_at"),
@@ -18,8 +19,13 @@ class Qdb {
 			"colors" => preg_split("/[\s|]+/", $this->EE->TMPL->fetch_param("colors", "black"))
 		);
 		
+		if ($options["quote_id"] !== FALSE)
+			$quotes = $this->EE->quotes->find_by_quote_id($options["quote_id"]);
+		else
+			$quotes = $this->EE->quotes->all($options);
+		
 		$vars = array();
-		foreach ($this->EE->quotes->all($options) as $quote) {
+		foreach ($quotes as $quote) {
 			$data = array(
 				"quote.id" => $quote->quote_id(),
 				"quote.created" => $quote->created_at(),
