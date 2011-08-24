@@ -123,7 +123,7 @@ $filters_active = $this->input->get_post("fid") ||
 		<?php elseif ($total < $per_page): ?>
 		<p><?=sprintf(lang("showing_x_quotes"), $total);?></p>
 		<?php else: ?>
-		<p><?=sprintf(lang("showing_x_of_y_quotes"), ($start + 1), $end, $total);?></p>
+		<p><?=sprintf(lang("showing_x_to_y_quotes"), ($start + 1), $end, $total);?></p>
 		<?php endif; ?>
 	</div>
 	<?php if ($total > $per_page): ?>

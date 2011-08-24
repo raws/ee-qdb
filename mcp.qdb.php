@@ -272,6 +272,7 @@ class Qdb_mcp {
 		$column_count = count($columns);
 		$batch_data = array();
 		$count = 0;
+		$skipped = 0;
 		
 		$this->EE->db->select("member_id");
 		$query = $this->EE->db->get("members");
@@ -281,9 +282,14 @@ class Qdb_mcp {
 		
 		if (($handle = fopen($upload["full_path"], "r")) !== FALSE) {
 			while (($row = fgetcsv($handle, 0, ',', '"', '\\')) !== FALSE) {
-				if (count($row) != $column_count) { continue; }
+				if (count($row) != $column_count) {
+					fclose($handle);
+					$this->EE->session->set_flashdata("message_failure", lang("could_not_map_columns"));
+					$this->EE->functions->redirect($this->cp_link_to("import_quotes"));
+				}
 				
 				$data = array_combine($columns, $row);
+				unset($data["*"]); // Remove unwanted columns
 				foreach ($data as $key => $value) {
 					switch ($key) {
 						case "member_id":
@@ -304,11 +310,17 @@ class Qdb_mcp {
 							break;
 					}
 					
-					if ($data[$key] == FALSE) { continue 2; }
+					if ($data[$key] == FALSE) {
+						$skipped++;
+						continue 2;
+					}
 				}
 				
 				foreach ($required_columns as $column_name) {
-					if (!array_key_exists($column_name, $data)) { continue 2; }
+					if (!array_key_exists($column_name, $data)) {
+						$skipped++;
+						continue 2;
+					}
 				}
 				
 				$batch_data[] = $data;
@@ -323,7 +335,12 @@ class Qdb_mcp {
 		
 		$this->EE->db->insert_batch("qdb_quotes", $batch_data);
 		
-		$this->EE->session->set_flashdata("message_success", $count." ".lang("quotes_imported_successfully"));
+		$message = sprintf(lang("x_quotes_imported_successfully"), $count);
+		if ($skipped > 0) {
+			$message .= " ".sprintf(lang("x_quotes_skipped"), $skipped);
+		}
+		
+		$this->EE->session->set_flashdata("message_success", $message);
 		$this->EE->functions->redirect($this->cp_link_to("index"));
 	}
 	

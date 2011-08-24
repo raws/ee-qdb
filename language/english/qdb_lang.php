@@ -39,11 +39,13 @@ $lang = array(
 	"quotes_deleted_successfully" => "Quotes deleted successfully!",
 	"quotes_closed_successfully" => "Quotes hidden successfully!",
 	"quotes_opened_successfully" => "Quotes published successfully!",
-	"quotes_imported_successfully" => "quotes imported successfully!", // Lowercase, because this is a sentence fragment
+	"x_quotes_imported_successfully" => '%1$d quotes imported successfully!',
+	"x_quotes_skipped" => '%1$d quotes skipped.',
+	"could_not_map_columns" => "The columns you specified did not match the file you uploaded.",
 	"could_not_read_file" => "The file you uploaded could not be read.",
 	
 	"import_quotes_intro" => "You may upload a CSV file to import quotes from another quote database.",
-	"import_quotes_columns_desc" => "Describe the order of the columns in your CSV file in a comma-delimited list. ExpressionEngine will do its best to convert data, such as timestamps, to a suitable format.",
+	"import_quotes_columns_desc" => "Describe the order of the columns in your CSV file in a comma-delimited list. ExpressionEngine will do its best to convert data, such as timestamps, to a suitable format. Designate columns to ignore with an asterisk (*).",
 	"valid_columns" => "Valid columns",
 	
 	"show_filters" => "Show Filters",
