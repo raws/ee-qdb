@@ -2,7 +2,7 @@ ee-qdb is an [ExpressionEngine](http://expressionengine.com/) 2.0 module for man
 
 ### Installation and usage
 
-Check out ee-qdb to `system/expressionengine/third_party/qdb`. Navigate to your ExpressionEngine control panel's modules page, and install "Quote Database".
+Clone ee-qdb to `system/expressionengine/third_party/qdb`. Navigate to your ExpressionEngine control panel's modules page, and install "Quote Database".
 
 The module includes a control panel interface for importing, managing and browsing quotes.
 
