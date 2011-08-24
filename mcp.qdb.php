@@ -51,7 +51,7 @@ class Qdb_mcp {
 		$this->process_filters();
 		
 		$this->EE->db->order_by("created_at", "desc");
-		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body');
+		$this->EE->db->select('quote_id, qdb_quotes.member_id, screen_name, created_at, updated_at, status, SUBSTRING_INDEX(body, "\n", 1) AS body', FALSE);
 		$this->EE->db->join("members", "qdb_quotes.member_id = members.member_id", "inner");
 		$query = $this->EE->db->get("qdb_quotes", $this->per_page, $offset);
 		foreach ($query->result_array() as $row) {
