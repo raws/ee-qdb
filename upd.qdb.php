@@ -27,6 +27,7 @@ class Qdb_upd {
 			"body" => array("type" => "text", "null" => FALSE)
 		));
 		$this->EE->dbforge->add_key("quote_id", TRUE);
+		$this->EE->dbforge->add_key("created_at");
 		$this->EE->dbforge->add_key("status");
 		$this->EE->dbforge->create_table("qdb_quotes", TRUE);
 		
