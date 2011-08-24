@@ -115,12 +115,20 @@ $filters_active = $this->input->get_post("fid") ||
 	?>
 </div>
 
-<?php if (isset($quotes) && !empty($quotes) && $total > $per_page): ?>
+<?php if (isset($quotes) && !empty($quotes)): ?>
 <div class="table-footer">
 	<div class="left">
-		<p><?=sprintf(lang("showing_x_quotes"), $start, $end, $total);?></p>
+		<?php if ($total == 1): ?>
+		<p><?=lang("showing_one_quote");?></p>
+		<?php elseif ($total < $per_page): ?>
+		<p><?=sprintf(lang("showing_x_quotes"), $total);?></p>
+		<?php else: ?>
+		<p><?=sprintf(lang("showing_x_of_y_quotes"), ($start + 1), $end, $total);?></p>
+		<?php endif; ?>
 	</div>
+	<?php if ($total > $per_page): ?>
 	<?=$pagination;?>
+	<?php endif; ?>
 	<div class="right">
 		<?=form_submit(array("name" => "submit", "value" => lang("submit"), "class" => "submit"));?>&nbsp;
 		<?=form_dropdown("action", $options);?>
