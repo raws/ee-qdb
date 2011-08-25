@@ -110,7 +110,7 @@ class Quote extends CI_Model {
 		$options = $this->query_options($options);
 		
 		$this->db->order_by($options["order_by"], $options["sort"]);
-		$query = $this->db->get(Quote::table, $options["limit"], $options["offset"]);
+		$query = $this->db->get_where(Quote::table, array("status" => "open"), $options["limit"], $options["offset"]);
 		$result = array();
 		
 		foreach ($query->result() as $quote)
@@ -120,7 +120,7 @@ class Quote extends CI_Model {
 	}
 	
 	function find_by_quote_id($quote_id) {
-		$query = $this->db->get_where(Quote::table, array("quote_id" => $quote_id), 1);
+		$query = $this->db->get_where(Quote::table, array("quote_id" => $quote_id, "status" => "open"), 1);
 		$result = array();
 		
 		foreach ($query->result() as $quote)
