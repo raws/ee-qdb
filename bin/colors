@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# Generate a list of random colors suitable for use with ee-qdb
+# See `colors --help` for usage
+
+require "bundler/setup"
+require "color"
+
+if ARGV.include?("--help") || ARGV.include?("-h")
+  STDERR.puts "usage: colors <count> <saturation> <brightness>"
+  STDERR.puts "       <count> is the number of colors to generate (default: 15)"
+  STDERR.puts "       <saturation> is a percentage from 0 to 100 (default: 75)"
+  STDERR.puts "       <brightness> is a percentage from 0 to 100 (default: 75)"
+  exit 1
+end
+
+count = (ARGV[0] || 15).to_i
+saturation = (ARGV[1] || 75).to_i
+brightness = (ARGV[2] || 75).to_i
+color = Color::HSL.new(0, saturation, brightness)
+
+colors = Array.new(count) do
+  color.hue += (360 / count)
+  color.html
+end.shuffle
+
+puts colors.join("|")

@@ -2,7 +2,7 @@
 
 class Quote extends CI_Model {
 	const table = "qdb_quotes";
-	const regex_nickname = "[\w_|\^`\[\]]+";
+	const regex_nickname = "[\w_|\^`\[\]-]+";
 	
 	var $quote_id;
 	var $member_id;
@@ -149,8 +149,9 @@ class Quote extends CI_Model {
 		if (!$this->colors)
 			$this->colors = array();
 		
+		$nick = strrev(strtolower(preg_replace("/[|`_^].*$/", "", $nick))); // Remove tail ends of ghosted or compound nicks
 		if (!array_key_exists($nick, $this->colors))
-			$this->colors[$nick] = $colors[array_rand($colors)];
+			$this->colors[$nick] = $colors[hexdec(hash("crc32", $nick)) % count($colors)];
 		
 		return $this->colors[$nick];
 	}
