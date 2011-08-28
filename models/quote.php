@@ -141,7 +141,7 @@ class Quote extends CI_Model {
 	private function lines_options($options = array()) {
 		return array_merge(array(
 			"colors" => array("#ffaeae", "#ffc9ad", "#ffe4ad", "#ffffad", "#e4ffad", "#c9ffad",
-												"#adffe4", "#adffff", "#ade4ff", "#c9adff", "#a4adff", "#ffadff")
+			                  "#adffe4", "#adffff", "#ade4ff", "#c9adff", "#a4adff", "#ffadff")
 		), $options);
 	}
 	
