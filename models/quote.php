@@ -16,6 +16,8 @@ class Quote extends CI_Model {
 	var $lines;
 	var $colors;
 	
+	var $count;
+	
 	function __construct($record = null) {
 		parent::__construct();
 		
@@ -85,8 +87,9 @@ class Quote extends CI_Model {
 					$data["line.message"] = $line;
 				}
 				
-				if (isset($data["line.nick"]))
+				if (isset($data["line.nick"])) {
 					$data["line.color"] = $this->nick_to_color($data["line.nick"], $options["colors"]);
+				}
 				
 				$lines[] = $data;
 			}
@@ -106,15 +109,28 @@ class Quote extends CI_Model {
 		return $this->submitter;
 	}
 	
+	function count($options = array()) {
+		$options = $this->query_options($options);
+		
+		$this->db->from(Quote::table);
+		$this->db->order_by($options["order_by"], $options["sort"]);
+		$this->db->where("status", "open");
+		
+		$this->count = $this->db->count_all_results();
+		return $this->count;
+	}
+	
 	function all($options = array()) {
 		$options = $this->query_options($options);
+		$this->count($options);
 		
 		$this->db->order_by($options["order_by"], $options["sort"]);
 		$query = $this->db->get_where(Quote::table, array("status" => "open"), $options["limit"], $options["offset"]);
 		$result = array();
 		
-		foreach ($query->result() as $quote)
+		foreach ($query->result() as $quote) {
 			$result[] = new Quote($quote);
+		}
 		
 		return $result;
 	}
@@ -123,8 +139,11 @@ class Quote extends CI_Model {
 		$query = $this->db->get_where(Quote::table, array("quote_id" => $quote_id, "status" => "open"), 1);
 		$result = array();
 		
-		foreach ($query->result() as $quote)
+		foreach ($query->result() as $quote) {
 			$result[] = new Quote($quote);
+		}
+		
+		$this->count = count($result);
 		
 		return $result;
 	}
@@ -146,12 +165,14 @@ class Quote extends CI_Model {
 	}
 	
 	private function nick_to_color($nick, $colors) {
-		if (!$this->colors)
+		if (!$this->colors) {
 			$this->colors = array();
+		}
 		
 		$nick = strrev(strtolower(preg_replace("/[|`_^].*$/", "", $nick))); // Remove tail ends of ghosted or compound nicks
-		if (!array_key_exists($nick, $this->colors))
+		if (!array_key_exists($nick, $this->colors)) {
 			$this->colors[$nick] = $colors[hexdec(hash("crc32", $nick)) % count($colors)];
+		}
 		
 		return $this->colors[$nick];
 	}

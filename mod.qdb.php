@@ -12,19 +12,26 @@ class Qdb {
 		
 		$options = array(
 			"quote_id" => $this->EE->TMPL->fetch_param("quote_id"),
-			"limit" => $this->EE->TMPL->fetch_param("limit", 0),
-			"offset" => 0,
+			"limit" => $this->EE->TMPL->fetch_param("limit", 10),
 			"order_by" => $this->EE->TMPL->fetch_param("order_by", "created_at"),
 			"sort" => $this->EE->TMPL->fetch_param("sort", "desc"),
-			"colors" => preg_split("/[\s|]+/", $this->EE->TMPL->fetch_param("colors", "black"))
+			"colors" => preg_split("/[\s|]+/", $this->EE->TMPL->fetch_param("colors", "black")),
+			"page" => $this->EE->TMPL->fetch_param("page", 0),
+			"pages" => $this->EE->TMPL->fetch_param("pages", 3)
+		);
+		$options["offset"] = $options["limit"] * $options["page"];
+		
+		if ($options["quote_id"] !== FALSE) {
+			$quotes = $this->EE->quotes->find_by_quote_id($options["quote_id"]);
+		} else {
+			$quotes = $this->EE->quotes->all($options);
+		}
+		
+		$vars = array(
+			"quotes" => array(),
+			"count" => $this->EE->quotes->count
 		);
 		
-		if ($options["quote_id"] !== FALSE)
-			$quotes = $this->EE->quotes->find_by_quote_id($options["quote_id"]);
-		else
-			$quotes = $this->EE->quotes->all($options);
-		
-		$vars = array();
 		foreach ($quotes as $quote) {
 			$data = array(
 				"quote.id" => $quote->quote_id(),
@@ -35,17 +42,15 @@ class Qdb {
 				"quote.status" => $quote->status()
 			);
 			
-			foreach (get_object_vars($quote->submitter()) as $key => $value)
+			foreach (get_object_vars($quote->submitter()) as $key => $value) {
 				$data["quote.submitter.$key"] = $value;
+			}
 			
-			$vars[] = $data;
+			$vars["quotes"][] = $data;
 		}
 		
-		if (empty($vars)) {
-			return $this->EE->TMPL->no_results();
-		} else {
-			$this->return_data .= $this->EE->TMPL->parse_variables($this->EE->TMPL->tagdata, $vars);
-			return $this->return_data;
-		}
+		$vars = array($vars); // Create a single-element array so we only render everything once
+		$this->return_data .= $this->EE->TMPL->parse_variables($this->EE->TMPL->tagdata, $vars);
+		return $this->return_data;
 	}
 }
