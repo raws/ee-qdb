@@ -30,12 +30,24 @@ class Qdb_upd {
 		$this->EE->dbforge->add_key("created_at");
 		$this->EE->dbforge->add_key("status");
 		$this->EE->dbforge->create_table("qdb_quotes", TRUE);
+		$this->update_1_0_1_add_fulltext_index();
 		
 		return TRUE;
 	}
 	
 	function update($current = "") {
+		if (version_compare($current, "1.0.1", "<")) {
+			$this->update_1_0_1_add_fulltext_index();
+			return TRUE;
+		}
+		
 		return FALSE;
+	}
+	
+	private function update_1_0_1_add_fulltext_index() {
+		$table = $this->EE->db->protect_identifiers("qdb_quotes", TRUE);
+		$this->EE->db->query("ALTER TABLE $table ENGINE = MYISAM");
+		$this->EE->db->query("ALTER TABLE $table ADD FULLTEXT `body` ( `body` )");
 	}
 	
 	function uninstall() {
