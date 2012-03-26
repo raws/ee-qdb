@@ -112,14 +112,12 @@ class Quote extends CI_Model {
 	function count($options = array()) {
 		$options = $this->query_options($options);
 		
-		$this->db->from(Quote::table);
-		$this->db->order_by($options["order_by"], $options["sort"]);
-		$this->db->where("status", "open");
-		if (array_key_exists("search", $options) && $options["search"] !== FALSE) {
-			$this->db->like("body", $options["search"]);
-		}
+		$sql = "SELECT COUNT(*) AS count FROM " . $this->db->protect_identifiers(Quote::table, TRUE) . " ";
+		$sql .= $this->build_query_conditions($options);
 		
-		$this->count = $this->db->count_all_results();
+		$query = $this->db->query($sql);
+		$this->count = intval($query->row()->count);
+		
 		return $this->count;
 	}
 	
@@ -127,11 +125,16 @@ class Quote extends CI_Model {
 		$options = $this->query_options($options);
 		$this->count($options);
 		
-		$this->db->order_by($options["order_by"], $options["sort"]);
-		if (array_key_exists("search", $options) && $options["search"] !== FALSE) {
-			$this->db->like("body", $options["search"]);
+		$sql = "SELECT * FROM " . $this->db->protect_identifiers(Quote::table, TRUE) . " ";
+		$sql .= $this->build_query_conditions($options);
+		$sql .= "ORDER BY " . $this->db->protect_identifiers($options["order_by"]) . " " . $options["sort"] . " ";
+		if ($options["offset"] > 0) {
+			$sql .= "LIMIT " . $options["offset"] . ", " . $options["limit"];
+		} else {
+			$sql .= "LIMIT " . $options["limit"];
 		}
-		$query = $this->db->get_where(Quote::table, array("status" => "open"), $options["limit"], $options["offset"]);
+		
+		$query = $this->db->query($sql);
 		$result = array();
 		
 		foreach ($query->result() as $quote) {
@@ -154,13 +157,36 @@ class Quote extends CI_Model {
 		return $result;
 	}
 	
+	private function build_query_conditions($options) {
+		$sql = "WHERE `status` = 'open' ";
+		if (array_key_exists("search", $options) && $options["search"] !== FALSE) {
+			$sql .= "AND MATCH (body) AGAINST (" . $this->db->escape($options["search"]) . " IN BOOLEAN MODE) ";
+		}
+		return $sql;
+	}
+	
 	private function query_options($options = array()) {
-		return array_merge(array(
+		$options = array_merge(array(
 			"limit" => 10,
 			"offset" => 0,
 			"order_by" => "created_at",
 			"sort" => "desc"
 		), $options);
+		
+		if (in_array(strtolower($options["order_by"]), array("quote_id", "created_at", "updated_at")) !== TRUE) {
+			$options["order_by"] = "created_at";
+		}
+		
+		if (in_array(strtolower($options["sort"]), array("desc", "asc", "random")) !== TRUE) {
+			$options["sort"] = "desc";
+		}
+		
+		if (strtolower($options["sort"]) == "random") {
+			$options["order_by"] = "RAND()";
+			$options["sort"] = "";
+		}
+		
+		return $options;
 	}
 	
 	private function lines_options($options = array()) {
