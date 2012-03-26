@@ -115,6 +115,9 @@ class Quote extends CI_Model {
 		$this->db->from(Quote::table);
 		$this->db->order_by($options["order_by"], $options["sort"]);
 		$this->db->where("status", "open");
+		if (array_key_exists("search", $options) && $options["search"] !== FALSE) {
+			$this->db->like("body", $options["search"]);
+		}
 		
 		$this->count = $this->db->count_all_results();
 		return $this->count;
@@ -125,6 +128,9 @@ class Quote extends CI_Model {
 		$this->count($options);
 		
 		$this->db->order_by($options["order_by"], $options["sort"]);
+		if (array_key_exists("search", $options) && $options["search"] !== FALSE) {
+			$this->db->like("body", $options["search"]);
+		}
 		$query = $this->db->get_where(Quote::table, array("status" => "open"), $options["limit"], $options["offset"]);
 		$result = array();
 		
