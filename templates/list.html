@@ -22,12 +22,15 @@
 			</thead>
 			<tbody>
 				{exp:qdb:quotes limit="10" order_by="created_at" sort="random" colors="#ed1c24|#00a651|#00aeef"}
-				{_quote}
-				{if no_results}
-				<tr>
-					<td colspan="5">There are no quotes in the database.</td>
-				</tr>
-				{/if}
+					{if count > 0}
+						{quotes}
+							{_quote}
+						{/quotes}
+					{if:else}
+						<tr>
+							<td colspan="5">There are no quotes in the database.</td>
+						</tr>
+					{/if}
 				{/exp:qdb:quotes}
 			</tbody>
 		</table>
