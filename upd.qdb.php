@@ -1,7 +1,7 @@
 <?php if (!defined("BASEPATH")) exit("Direct script access not allowed");
 
 class Qdb_upd {
-	var $version = "1.0.2";
+	var $version = "1.0.3";
 	
 	function __construct() {
 		$this->EE =& get_instance();
@@ -17,6 +17,8 @@ class Qdb_upd {
 			"has_publish_fields" => "n"
 		);
 		$this->EE->db->insert("modules", $data);
+		
+		$this->update_1_1_0_add_submit_action();
 		
 		$this->EE->dbforge->add_field(array(
 			"quote_id" => array("type" => "int", "constraint" => "10", "unsigned" => TRUE, "auto_increment" => TRUE),
@@ -41,6 +43,11 @@ class Qdb_upd {
 			return TRUE;
 		}
 		
+		if (version_compare($current, "1.1.0", "<")) {
+			$this->update_1_1_0_add_submit_action();
+			return TRUE;
+		}
+		
 		return FALSE;
 	}
 	
@@ -48,6 +55,13 @@ class Qdb_upd {
 		$table = $this->EE->db->protect_identifiers("qdb_quotes", TRUE);
 		$this->EE->db->query("ALTER TABLE $table ENGINE = MYISAM");
 		$this->EE->db->query("ALTER TABLE $table ADD FULLTEXT `body` ( `body` )");
+	}
+	
+	private function update_1_1_0_add_submit_action() {
+		$this->EE->db->insert("actions", array(
+			"class" => "Qdb",
+			"method" => "submit"
+		));
 	}
 	
 	function uninstall() {

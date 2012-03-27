@@ -53,4 +53,35 @@ class Qdb {
 		$this->return_data .= $this->EE->TMPL->parse_variables($this->EE->TMPL->tagdata, $vars);
 		return $this->return_data;
 	}
+	
+	function submit_form_tag() {
+		return $this->EE->functions->form_declaration(array(
+			"id" => $this->EE->TMPL->form_id,
+			"class" => $this->EE->TMPL->form_class,
+			"secure" => TRUE,
+			"hidden_fields" => array(
+				"ACT" => $this->EE->functions->fetch_action_id("Qdb", "submit"),
+				"RET" => $this->EE->TMPL->fetch_param("return", $this->EE->functions->fetch_site_index())
+			)
+		));
+	}
+	
+	function submit() {
+		if (in_array($this->EE->session->userdata["group_id"], array(2, 3, 4)) !== FALSE) {
+			$this->EE->functions->redirect($this->EE->functions->fetch_site_index());
+			return;
+		}
+		
+		if (($quote_body = $this->EE->input->post("quote_body")) && !empty($quote_body) && !preg_match("/^\s*$/", $quote_body)) {
+			$this->EE->db->insert("qdb_quotes", array(
+				"member_id" => $this->EE->session->userdata["member_id"],
+				"created_at" => date("Y-m-d H:i:s"),
+				"status" => "open",
+				"body" => $quote_body
+			));
+			$this->EE->functions->redirect($this->EE->functions->create_url($this->EE->input->post("RET")));
+		} else {
+			$this->EE->functions->redirect($this->EE->functions->fetch_site_index());
+		}
+	}
 }
