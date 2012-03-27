@@ -1,7 +1,7 @@
 <?php if (!defined("BASEPATH")) exit("Direct script access not allowed");
 
 class Qdb_upd {
-	var $version = "1.0.3";
+	var $version = "1.1.0";
 	
 	function __construct() {
 		$this->EE =& get_instance();
